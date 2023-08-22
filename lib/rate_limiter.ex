@@ -5,18 +5,8 @@ defmodule RateLimiter do
 
   use GenServer
 
-  @doc """
-  Start a rate limit server under the rate_limit app's supervisor.
-  """
-  def start(opts) do
-    DynamicSupervisor.start_child(
-      RateLimiter.Supervisor,
-      {__MODULE__, opts}
-    )
-  end
-
   def rate_limit(server, timeout \\ :infinity) do
-      GenServer.call(server, :get_token, timeout)
+    GenServer.call(server, :get_token, timeout)
   end
 
   def start_link(name: name, cap: cap, duration: duration) do
