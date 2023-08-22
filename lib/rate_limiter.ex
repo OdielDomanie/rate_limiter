@@ -15,11 +15,8 @@ defmodule RateLimiter do
     )
   end
 
-  defmacro rate_limit(server, do: body) do
-    quote bind_quoted: [server: server, body: body] do
-      :ok = GenServer.call(server, :get_token, :infinity)
-      body
-    end
+  def rate_limit(server, timeout \\ :infinity) do
+      GenServer.call(server, :get_token, timeout)
   end
 
   def start_link(name: name, cap: cap, duration: duration) do
