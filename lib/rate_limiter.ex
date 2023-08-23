@@ -5,8 +5,20 @@ defmodule RateLimiter do
 
   use GenServer
 
-  def rate_limit(server, timeout \\ :infinity) do
-    GenServer.call(server, :get_token, timeout)
+  @doc """
+  Wait until the bucket opens. The RL server is started if not alive.
+
+  `cap` and `duration` must match the values the RateLimiter server is started with.
+  """
+  def rate_limit(name, cap, duration, timeout \\ :infinity) do
+    if !GenServer.whereis(name) do
+      DynamicSupervisor.start_child(
+        RateLimiter.Supervisor,
+        {RateLimiter, name: name, cap: cap, duration: duration}
+      )
+    end
+
+    GenServer.call(name, {:get_token, cap, duration}, timeout)
   end
 
   def start_link(name: name, cap: cap, duration: duration) do
@@ -14,6 +26,7 @@ defmodule RateLimiter do
   end
 
   @impl true
+  @doc false
   def init(init_arg) do
     state =
       init_arg
@@ -26,8 +39,9 @@ defmodule RateLimiter do
   defp now, do: System.monotonic_time(:millisecond)
 
   @impl true
+  @doc false
   def handle_call(
-        :get_token,
+        {:get_token, cap, dur},
         _from,
         %{cap: cap, duration: dur, queue: queue, len: len} = state
       ) do

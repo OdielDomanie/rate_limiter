@@ -13,7 +13,9 @@ defmodule RateLimiter.MixProject do
 
   # Run "mix help compile.app" to learn about applications.
   def application do
-    []
+    [
+      mod: {RateLimiter.Application, []}
+    ]
   end
 
   # Run "mix help deps" to learn about dependencies.
